@@ -1,4 +1,5 @@
 import { Text, View } from '@/components/Themed';
+import Slider from '@react-native-community/slider';
 import { Picker } from '@react-native-picker/picker';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import * as Device from 'expo-device';
@@ -16,6 +17,8 @@ export default function TabOneScreen() {
   const [vozes, setVozes] = useState<Speech.Voice[] | []>([]);
   const [deviceLanguage, setDeviceLanguage] = useState('');
   const [selectedVoice, setSelectedVoice] = useState<string | undefined>(undefined);
+  const [velocidade, setVelocidade] = useState(1);
+  const [pitch, setPitch] = useState(1);
   //variável para dizer se está carregando ou não
   const [loading, setLoading] = useState(true);
   const [deviceType, setDeviceType] = useState<string | null>('');
@@ -28,6 +31,8 @@ export default function TabOneScreen() {
         voice: itemValue.toString(),
         onDone: () => setIsSpeaking(false),
         onStopped: () => setIsSpeaking(false),
+        rate: velocidade,
+        pitch:pitch
       });
     }
   }
@@ -38,6 +43,8 @@ export default function TabOneScreen() {
       voice: selectedVoice,
       onDone: () => setIsSpeaking(false),
       onStopped: () => setIsSpeaking(false),
+      rate: velocidade,
+      pitch:pitch
     });
   };
 
@@ -82,7 +89,7 @@ export default function TabOneScreen() {
       Speech.pause();
     }
   }
-  
+
   const resumeSpeaking = () => {
     if (deviceType === 'Android'){
       alert('Pausar a fala não é suportado em dispositivos Android');
@@ -99,8 +106,29 @@ export default function TabOneScreen() {
       {/* Link para uma segunda tela, ele é definido com o nome do arquivo que contém a tela */}
       <Link href="/two"><Text style={{textDecorationLine:'underline'}}>Segunda tela</Text></Link>
 
-
-
+      {/* Slider para definir a velocidade da fala */}
+      <Text>Velocidade da fala: {velocidade.toPrecision(2)}</Text>
+      <Slider
+        minimumValue={0.1}
+        maximumValue={2}
+        style={[colorScheme === 'dark' ? styles.darkTextInput : styles.lightTextInput, {width: '50%', height: 40}]}
+        onValueChange={(value) => setVelocidade(value)}
+        value={velocidade}
+        step={0.1}
+        minimumTrackTintColor={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
+        maximumTrackTintColor={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
+      />
+      <Text>Pitch da fala: {pitch.toPrecision(2)}</Text>
+      <Slider
+        minimumValue={0.1}
+        maximumValue={2}
+        style={[colorScheme === 'dark' ? styles.darkTextInput : styles.lightTextInput, {width: '50%', height: 40}]}
+        onValueChange={(value) => setPitch(value)}
+        value={pitch}
+        step={0.1}
+        minimumTrackTintColor={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
+        maximumTrackTintColor={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
+      />
       {/* Input para o texto que será falado */}
       <TextInput style={[styles.inputLike, colorScheme === 'dark' ? styles.darkTextInput : styles.lightTextInput]} value={thingToSay} onChangeText={setThingToSay} />
       
@@ -118,6 +146,9 @@ export default function TabOneScreen() {
       {isSpeaking && !isPaused ? <Button title='Pausar' onPress={pauseSpeaking}/> : null}
       {/* botão para continuar caso a fala esteja pausada, inútil para android mas existe */}
       {isPaused ? <Button title='Continuar' onPress={resumeSpeaking}/> : null}
+      
+
+      
 
       {/* scroolview para mostrar as vozes disponíveis no idioma do dispositivo, se quizer ver TODAS as vozes altere o comentario da linha abaixo para comentar o null
       outra possibilidade é apagar o if e deixar o map sem condição
@@ -130,7 +161,7 @@ export default function TabOneScreen() {
           (voz.name.toLowerCase().includes(deviceLanguage.toLowerCase()) ? <Text key={voz.identifier}>{voz.identifier} - {voz.name}</Text> : null /* <Text key={voz.identifier}>{voz.identifier} - {voz.name}</Text> */)
         ))}
 
-        <View style={[{ marginTop: 20,justifyContent:'center',alignItems:'center'},colorScheme === 'dark' ? styles.darkTextInput : styles.lightTextInput]}>
+        <View style={[{ marginTop: 20,justifyContent:'center',alignItems:'center'}]}>
           <Text>Selecione uma voz:</Text>
           <View style={[{width:'100%'}]}>
             {/* picker, não vem com o axios ou react de padrão, tem que instalar o pacote @react-native-picker/picker */}
@@ -188,7 +219,7 @@ const styles = StyleSheet.create({
   },
   pickerStyleDark:{
     width: '100%',
-    borderColor: 'white', borderWidth: 1,
+    borderColor: 'rgb(205,205,205)', borderWidth: 1,
     color: DarkTheme.colors.text,
     backgroundColor: DarkTheme.colors.background,
   }
