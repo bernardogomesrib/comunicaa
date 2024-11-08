@@ -69,10 +69,11 @@ export default function TabOneScreen() {
   //SE NÃO ENCONTRAR NENHUMA VOZ NO IDIOMA DO DISPOSITIVO, A VOZ SELECIONADA SERÁ NULA
   //por padrão a voz selecionada é a primeira voz encontrada no idioma do dispositivo
   useEffect(() => {
-    setSelectedVoice(vozes ? vozes.find((voice) => voice.name.toLowerCase().includes(deviceLanguage.toLowerCase()))?.identifier : undefined);
-    
-    // desativando o loading por ter finalmente carregado as vozes e as outras variáveis necessárias
-    setLoading(false);
+    if (vozes.length > 0) {
+      const selected = vozes.find((voice) => voice.name.toLowerCase().includes(deviceLanguage.toLowerCase()))?.identifier;
+      setSelectedVoice(selected);
+      setLoading(false);
+    }
   }, [vozes]);
 
   //PARANDO DE FALAR
@@ -168,12 +169,14 @@ export default function TabOneScreen() {
             <Picker
               selectedValue={selectedVoice}
               onValueChange={(itemValue: string) => changeTheVoice(itemValue)}
-              style={[colorScheme === 'dark' ? styles.pickerStyleDark : styles.pickerStyleLight]}
+              style={[colorScheme === 'dark' ? styles.pickerStyleDark : styles.pickerStyleLight,
+                {borderColor: colorScheme === 'dark' ? 'white' : 'black', borderWidth: 1,backgroundColor: colorScheme === 'dark' ? 'hsl(43,12%,17%)' : DefaultTheme.colors.background}
+              ]}
             >
               {/* mapeando as vozes disponíveis no idioma do dispositivo compativeis com o idioma do dispositivo */}
               {/* é possível alterar para ver todas as vozes disponíveis no dispositivo, basta retirar o if e deixar o map sem condição */}
               {vozes.map((voz) => (
-                (voz.name.toLowerCase().includes(deviceLanguage.toLowerCase()) ? <Picker.Item style={colorScheme === 'dark' ? styles.darkTextInput : styles.lightTextInput} key={voz.identifier} label={voz.name} value={voz.identifier} /> : null)
+                (voz.name.toLowerCase().includes(deviceLanguage.toLowerCase()) ? <Picker.Item style={[colorScheme === 'dark' ? styles.darkTextInput : styles.lightTextInput,{backgroundColor:colorScheme=== 'dark' ? 'hsl(43,1%,100%)':DefaultTheme.colors.background }]} key={voz.identifier} label={voz.name} value={voz.identifier} /> : null)
               ))}
             </Picker>
           </View>
