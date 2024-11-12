@@ -69,6 +69,7 @@ function RootLayoutNav() {
             ),
           }}
         />
+        <Stack.Screen name="teste"  options={{ headerShown: true, title:'Tela de testes' }} />
       </Stack>
     </ThemeProvider>
   );

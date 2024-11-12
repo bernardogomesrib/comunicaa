@@ -15,7 +15,7 @@ export {
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  initialRouteName: '(rotas)',
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -51,9 +51,9 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        {/* é necessário usar este (tabs) para que o app funcione corretamente e não apareça no navegador
+        {/* é necessário usar este (rotas) para que o app funcione corretamente e não apareça no navegador
         as partes de link no url, em um celular isso não se aplica mas deus nos ajude */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(rotas)" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

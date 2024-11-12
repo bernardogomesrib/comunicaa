@@ -1,14 +1,14 @@
 import { Text, View } from '@/components/Themed';
 import Slider from '@react-native-community/slider';
 import { Picker } from '@react-native-picker/picker';
-import { DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { DefaultTheme } from '@react-navigation/native';
 import * as Device from 'expo-device';
 import * as Localization from 'expo-localization';
 import { Link } from 'expo-router';
 import * as Speech from 'expo-speech';
 import { useEffect, useState } from 'react';
-import { Button, ScrollView, StyleSheet, TextInput, useColorScheme } from 'react-native';
-
+import { Button, ScrollView, TextInput, useColorScheme } from 'react-native';
+import { stylesApp } from './styles';
 export default function TabOneScreen() {
   const [thingToSay, setThingToSay] = useState('Palavra');
   const colorScheme = useColorScheme();
@@ -57,24 +57,22 @@ export default function TabOneScreen() {
   }, []);
 
   //PEGANDO AS VOZES DISPONÍVEIS NO DISPOSITIVO DEPOIS DE DEFINIR A VARIAVEL DE LINGUAGEM
-  useEffect(() => {
-    const getVoices = async () => {
-      const voices = await Speech.getAvailableVoicesAsync();
-      setVozes(voices);
-    };
-    getVoices();
-  }, [deviceLanguage]);
-
   //SELECIONANDO A VOZ DO DISPOSITIVO DE ACORDO COM A LINGUAGEM DO DISPOSITIVO E DESATIVANDO O LOADING
   //SE NÃO ENCONTRAR NENHUMA VOZ NO IDIOMA DO DISPOSITIVO, A VOZ SELECIONADA SERÁ NULA
   //por padrão a voz selecionada é a primeira voz encontrada no idioma do dispositivo
   useEffect(() => {
-    if (vozes.length > 0) {
-      const selected = vozes.find((voice) => voice.name.toLowerCase().includes(deviceLanguage.toLowerCase()))?.identifier;
-      setSelectedVoice(selected);
-      setLoading(false);
-    }
-  }, [vozes]);
+    const getVoices = async () => {
+      const voices = await Speech.getAvailableVoicesAsync().then((voices) => {
+        setVozes(voices)
+      }).then(() => {
+        const selected = vozes.find((vozes) => vozes.name.toLowerCase().includes(deviceLanguage.toLowerCase()))?.identifier;
+        setSelectedVoice(selected);
+        setLoading(false);
+      }).catch((error) => {alert('Erro ao pegar as vozes disponíveis: ' + error)}); ;
+    };
+    getVoices();
+  }, [deviceLanguage]);
+
 
   //PARANDO DE FALAR
   const stopSpeaking = () => {
@@ -100,19 +98,20 @@ export default function TabOneScreen() {
     }
   }
 
-  return (loading ? (<View style={styles.container}><Text>Carregando....</Text></View>) : (<View style={styles.container}>
+  return (loading ? (<View style={stylesApp.container}><Text>Carregando....</Text></View>) : (<View style={stylesApp.container}>
       {/* texto da tela inicial */}
-      <Text style={styles.title}>Tela inicial</Text>
+      <Text style={stylesApp.title}>Tela inicial</Text>
 
       {/* Link para uma segunda tela, ele é definido com o nome do arquivo que contém a tela */}
       <Link href="/two"><Text style={{textDecorationLine:'underline'}}>Segunda tela</Text></Link>
+      <Link href="/teste"><Text style={{textDecorationLine:'underline'}}>teladeTestes</Text></Link>
 
       {/* Slider para definir a velocidade da fala */}
       <Text>Velocidade da fala: {velocidade.toPrecision(2)}</Text>
       <Slider
         minimumValue={0.1}
         maximumValue={2}
-        style={[colorScheme === 'dark' ? styles.darkTextInput : styles.lightTextInput, {width: '50%', height: 40}]}
+        style={[colorScheme === 'dark' ? stylesApp.darkTextInput : stylesApp.lightTextInput, {width: '50%', height: 40}]}
         onValueChange={(value) => setVelocidade(value)}
         value={velocidade}
         step={0.1}
@@ -123,7 +122,7 @@ export default function TabOneScreen() {
       <Slider
         minimumValue={0.1}
         maximumValue={2}
-        style={[colorScheme === 'dark' ? styles.darkTextInput : styles.lightTextInput, {width: '50%', height: 40}]}
+        style={[colorScheme === 'dark' ? stylesApp.darkTextInput : stylesApp.lightTextInput, {width: '50%', height: 40}]}
         onValueChange={(value) => setPitch(value)}
         value={pitch}
         step={0.1}
@@ -131,7 +130,7 @@ export default function TabOneScreen() {
         maximumTrackTintColor={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
       />
       {/* Input para o texto que será falado */}
-      <TextInput style={[styles.inputLike, colorScheme === 'dark' ? styles.darkTextInput : styles.lightTextInput]} value={thingToSay} onChangeText={setThingToSay} />
+      <TextInput style={[stylesApp.inputLike, colorScheme === 'dark' ? stylesApp.darkTextInput : stylesApp.lightTextInput]} value={thingToSay} onChangeText={setThingToSay} />
       
       {/* se o app estiver falando, o botão será de parar, se não, será de falar */}
       {isSpeaking ? (
@@ -169,14 +168,14 @@ export default function TabOneScreen() {
             <Picker
               selectedValue={selectedVoice}
               onValueChange={(itemValue: string) => changeTheVoice(itemValue)}
-              style={[colorScheme === 'dark' ? styles.pickerStyleDark : styles.pickerStyleLight,
+              style={[colorScheme === 'dark' ? stylesApp.pickerStyleDark : stylesApp.pickerStyleLight,
                 {borderColor: colorScheme === 'dark' ? 'white' : 'black', borderWidth: 1,backgroundColor: colorScheme === 'dark' ? 'hsl(43,12%,17%)' : DefaultTheme.colors.background}
               ]}
             >
               {/* mapeando as vozes disponíveis no idioma do dispositivo compativeis com o idioma do dispositivo */}
               {/* é possível alterar para ver todas as vozes disponíveis no dispositivo, basta retirar o if e deixar o map sem condição */}
               {vozes.map((voz) => (
-                (voz.name.toLowerCase().includes(deviceLanguage.toLowerCase()) ? <Picker.Item style={[colorScheme === 'dark' ? styles.darkTextInput : styles.lightTextInput,{backgroundColor:colorScheme=== 'dark' ? 'hsl(43,1%,100%)':DefaultTheme.colors.background }]} key={voz.identifier} label={voz.name} value={voz.identifier} /> : null)
+                (voz.name.toLowerCase().includes(deviceLanguage.toLowerCase()) ? <Picker.Item style={[colorScheme === 'dark' ? stylesApp.darkTextInput : stylesApp.lightTextInput,{backgroundColor:colorScheme=== 'dark' ? 'hsl(43,1%,100%)':DefaultTheme.colors.background }]} key={voz.identifier} label={voz.name} value={voz.identifier} /> : null)
               ))}
             </Picker>
           </View>
@@ -186,44 +185,3 @@ export default function TabOneScreen() {
   );
 }
 /* estilização da tela atual */
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 20
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-  darkTextInput: {
-    color: DarkTheme.colors.text,
-    backgroundColor: DarkTheme.colors.background,
-  },
-  lightTextInput: {
-    color: DefaultTheme.colors.text,
-    backgroundColor: DefaultTheme.colors.background,
-  },
-  inputLike: {
-    borderColor: 'white', borderWidth: 1, width: '50%'
-  },
-  pickerStyleLight:{
-    width: '100%',
-    borderColor: 'black', borderWidth: 1,
-    color: DefaultTheme.colors.text,
-    backgroundColor: DefaultTheme.colors.background,
-  },
-  pickerStyleDark:{
-    width: '100%',
-    borderColor: 'rgb(205,205,205)', borderWidth: 1,
-    color: DarkTheme.colors.text,
-    backgroundColor: DarkTheme.colors.background,
-  }
-});
