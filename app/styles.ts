@@ -43,5 +43,5 @@ const stylesApp = StyleSheet.create({
   });
   
 
-
+export default stylesApp;
 export { stylesApp };

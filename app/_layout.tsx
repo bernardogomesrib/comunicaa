@@ -51,8 +51,6 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        {/* é necessário usar este (rotas) para que o app funcione corretamente e não apareça no navegador
-        as partes de link no url, em um celular isso não se aplica mas deus nos ajude */}
         <Stack.Screen name="(rotas)" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>

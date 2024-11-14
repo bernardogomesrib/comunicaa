@@ -8,7 +8,7 @@ import { Link } from 'expo-router';
 import * as Speech from 'expo-speech';
 import { useEffect, useState } from 'react';
 import { Button, ScrollView, TextInput, useColorScheme } from 'react-native';
-import { stylesApp } from './styles';
+import { stylesApp } from '../styles';
 export default function TabOneScreen() {
   const [thingToSay, setThingToSay] = useState('Palavra');
   const colorScheme = useColorScheme();
