@@ -55,7 +55,6 @@ function RootLayoutNav() {
         {/* nesta parte é onde você define as telas que vão ser usadas no app e se elas irão mostrar o header ou não,
         é possivel configurar o header de cada tela individualmente e adicionar botões e outras coisas como por exemplo
         o titulo, caso não mude, o nome do arquivo será usado */}
-        <Stack.Screen name="index"  options={{ headerShown: true, title:'Pagina inicial' }} />
         <Stack.Screen
           name="two"
           options={{
@@ -69,7 +68,10 @@ function RootLayoutNav() {
             ),
           }}
         />
-        <Stack.Screen name="teste"  options={{ headerShown: true, title:'Tela de testes' }} />
+        <Stack.Screen name="teste"  options={{ headerShown: false }} />
+        <Stack.Screen name="login"  options={{ headerShown: false}} />
+        <Stack.Screen name="index"  options={{ headerShown: false}} />
+        <Stack.Screen name="cadastrarUsuario"  options={{ headerShown: false}} />
       </Stack>
     </ThemeProvider>
   );
