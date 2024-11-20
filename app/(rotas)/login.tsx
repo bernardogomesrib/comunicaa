@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { Link } from 'expo-router';
 
 export default function Login() {
   useEffect(() => {
-    // Forçar o modo paisagem (horizontal)
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
   }, []);
 
@@ -32,7 +32,7 @@ export default function Login() {
 
       {/* Link Esqueci Minha Senha */}
       <TouchableOpacity>
-        <Text style={styles.forgotPassword}>Esqueci minha senha</Text>
+      <Link href="/esqueceuSenha"><Text style={styles.forgotPassword}>Esqueci minha senha</Text></Link>
       </TouchableOpacity>
 
       {/* Botão de Login */}
@@ -65,10 +65,10 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1, // Isso permite rolar o conteúdo
+    flexGrow: 1,
     backgroundColor: '#fff',
     padding: 20,
-    flexDirection: 'column', // Itens dispostos verticalmente
+    flexDirection: 'column',
   },
   inputContainer: {
     marginBottom: 15,
@@ -89,19 +89,19 @@ const styles = StyleSheet.create({
   forgotPassword: {
     color: 'red',
     textAlign: 'left',
-    marginBottom: 20,
+    marginBottom: 20
   },
   loginButton: {
     backgroundColor: '#28a745',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 20
   },
   loginButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   registerContainer: {
     flexDirection: 'row',
