@@ -2,9 +2,10 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Usando ícones do Ionicons
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 export default function PranchaDentro() {
+  const router = useRouter();
   useEffect(() => {
     // Forçar a tela a ficar no modo paisagem
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
@@ -21,11 +22,11 @@ export default function PranchaDentro() {
       <View style={styles.header}>
         <Text style={styles.title}>Prancha de Cores</Text>
         <View style={styles.icons}>
-          <TouchableOpacity onPress={() => console.log('Abrir menu')}>
+          <TouchableOpacity onPress={() => router.push('/modalMenu')}>
             <Ionicons name="menu" size={30} color="black" />
           </TouchableOpacity>
-          <TouchableOpacity>
-            <Link href="/configuracoes"><Ionicons name="settings" size={30} color="black" /></Link>
+          <TouchableOpacity onPress={() => router.push('/configuracoes')}>
+            <Ionicons name="settings" size={30} color="black" />
           </TouchableOpacity>
         </View>
       </View>
