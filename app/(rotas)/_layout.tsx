@@ -76,6 +76,7 @@ function RootLayoutNav() {
         <Stack.Screen name="pranchaDentro"  options={{ headerShown: false}} />
         <Stack.Screen name="configuracoes"  options={{ headerShown: false}} />
         <Stack.Screen name="modalMenu"  options={{ headerShown: false}} />
+        <Stack.Screen name="supervisor"  options={{ headerShown: false}} />
       </Stack>
     </ThemeProvider>
   );
