@@ -73,6 +73,8 @@ function RootLayoutNav() {
         <Stack.Screen name="index"  options={{ headerShown: false}} />
         <Stack.Screen name="cadastrarUsuario"  options={{ headerShown: false}} />
         <Stack.Screen name="esqueceuSenha"  options={{ headerShown: false}} />
+        <Stack.Screen name="pranchaDentro"  options={{ headerShown: false}} />
+        <Stack.Screen name="configuracoes"  options={{ headerShown: false}} />
       </Stack>
     </ThemeProvider>
   );
