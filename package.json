@@ -17,6 +17,7 @@
     "@react-native-community/slider": "^4.5.5",
     "@react-native-picker/picker": "^2.9.0",
     "@react-navigation/native": "^7.0.0",
+    "axios": "^1.7.8",
     "expo": "~52.0.6",
     "expo-device": "~7.0.1",
     "expo-font": "~13.0.1",

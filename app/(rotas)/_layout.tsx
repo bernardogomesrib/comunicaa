@@ -70,7 +70,8 @@ function RootLayoutNav() {
         />
         <Stack.Screen name="teste"  options={{ headerShown: false }} />
         <Stack.Screen name="login"  options={{ headerShown: false}} />
-        <Stack.Screen name="index"  options={{ headerShown: false}} />
+        <Stack.Screen name="index"  options={{ headerShown: true}} />
+        <Stack.Screen name="ttsPage"  options={{ headerShown: false}} />
         <Stack.Screen name="cadastrarUsuario"  options={{ headerShown: false}} />
         <Stack.Screen name="esqueceuSenha"  options={{ headerShown: false}} />
         <Stack.Screen name="pranchaDentro"  options={{ headerShown: false}} />
