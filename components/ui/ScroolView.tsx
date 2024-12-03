@@ -19,5 +19,5 @@ export type ViewProps = ThemeProps & DefaultView['props'];
 export function ScrollView(props: ViewProps) {
   const { style, lightColor, darkColor, ...otherProps } = props;
   const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
-  return <DefaultView scrollEnabled style={[{ backgroundColor,display:'flex',flexWrap:'wrap',flexDirection:'row',width:"100%" }, style]} {...otherProps} />;
+  return <DefaultView scrollEnabled={true} style={[{ backgroundColor,width:"100%" }, style]} {...otherProps} />;
 }
