@@ -10,11 +10,12 @@ import {
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import * as ScreenOrientation from "expo-screen-orientation";
 import CriarCartaoModal from "./criarCartaoModal";
-import AlterarCartaoModal from "./alterarCartaoModal"; // Importando o Modal de Alterar Cartão
+import AlterarCartaoModal from "./alterarCartaoModal";
+import ExcluirCartaoModal from "./excluirCartaoModal";
+import AdicionarCartaoPranchaModal from "./adicionarCartaoPranchaModal";
 
 const Cartoes = () => {
   useEffect(() => {
-    // Travar a orientação da tela em modo landscape
     const lockOrientation = async () => {
       await ScreenOrientation.lockAsync(
         ScreenOrientation.OrientationLock.LANDSCAPE
@@ -25,7 +26,10 @@ const Cartoes = () => {
 
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalAlterarVisible, setModalAlterarVisible] = useState(false); // Estado para o Modal de Alterar Cartão
+  const [modalAlterarVisible, setModalAlterarVisible] = useState(false);
+  const [modalExcluirVisible, setModalExcluirVisible] = useState(false);
+  const [nomeCartaoExcluir, setNomeCartaoExcluir] = useState("");
+  const [modalPranchaVisible, setModalPranchaVisible] = useState(false);
 
   const meusCartoes = [
     { id: "1", title: "Cartão 1" },
@@ -39,6 +43,22 @@ const Cartoes = () => {
 
   const handleSelectCard = (id: string) => {
     setSelectedCard((prev) => (prev === id ? null : id));
+  };
+
+  const handleExcluirCard = (nome: string) => {
+    setNomeCartaoExcluir(nome);
+    setModalExcluirVisible(true);
+  };
+
+  const handleAdicionarPrancha = (rotulo: string, prancha: string) => {
+    // Lógica para adicionar o cartão à prancha selecionada
+    console.log(`Cartão "${rotulo}" adicionado à prancha "${prancha}".`);
+    setModalPranchaVisible(false);
+  };
+
+  const excluirCartao = () => {
+    console.log(`Cartão "${nomeCartaoExcluir}" excluído.`);
+    setModalExcluirVisible(false);
   };
 
   return (
@@ -89,16 +109,22 @@ const Cartoes = () => {
             <Text style={styles.cardTitle}>{item.title}</Text>
             {selectedCard === item.id && (
               <View style={styles.cardMenu}>
-                <TouchableOpacity style={styles.cardMenuButton}>
+                <TouchableOpacity
+                  style={styles.cardMenuButton}
+                  onPress={() => setModalPranchaVisible(true)}
+                >
                   <Text style={styles.cardMenuText}>Adicionar à Prancha</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.cardMenuButton}
-                  onPress={() => setModalAlterarVisible(true)} // Abrir o Modal de Alterar Cartão
+                  onPress={() => setModalAlterarVisible(true)}
                 >
                   <Text style={styles.cardMenuText}>Alterar Cartão</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.cardMenuButton}>
+                <TouchableOpacity
+                  style={styles.cardMenuButton}
+                  onPress={() => handleExcluirCard(item.title)}
+                >
                   <Text style={styles.cardMenuText}>Excluir Cartão</Text>
                 </TouchableOpacity>
               </View>
@@ -142,6 +168,16 @@ const Cartoes = () => {
       <AlterarCartaoModal
         visible={modalAlterarVisible}
         onClose={() => setModalAlterarVisible(false)}
+      />
+      <ExcluirCartaoModal
+        visible={modalExcluirVisible}
+        onClose={() => setModalExcluirVisible(false)}
+        onExcluir={excluirCartao}
+        nomeCartao={nomeCartaoExcluir}
+      />
+      <AdicionarCartaoPranchaModal
+        visible={modalPranchaVisible}
+        onClose={() => setModalPranchaVisible(false)}
       />
     </View>
   );
