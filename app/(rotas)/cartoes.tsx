@@ -2,17 +2,21 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   FlatList,
+  Alert,
+  StyleSheet,
 } from "react-native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import axios from "axios";
 import * as ScreenOrientation from "expo-screen-orientation";
 import CriarCartaoModal from "./criarCartaoModal";
 import AlterarCartaoModal from "./alterarCartaoModal";
 import ExcluirCartaoModal from "./excluirCartaoModal";
 import AdicionarCartaoPranchaModal from "./adicionarCartaoPranchaModal";
+import { ScrollView } from "@/components/ui/ScroolView";
+import { Cartao } from "@/components/ui/Cartao";
 
 const Cartoes = () => {
   useEffect(() => {
@@ -30,15 +34,39 @@ const Cartoes = () => {
   const [modalExcluirVisible, setModalExcluirVisible] = useState(false);
   const [nomeCartaoExcluir, setNomeCartaoExcluir] = useState("");
   const [modalPranchaVisible, setModalPranchaVisible] = useState(false);
+  const [cartoesBiblioteca, setCartoesBiblioteca] = useState([]);
+  const [page, setPage] = useState(0);
+
+  const pegarCartoesBiblioteca = async (pageNum = 0) => {
+    try {
+      const response = await axios.get(
+        `${process.env.EXPO_PUBLIC_API_URL}cartao?page=${pageNum}&size=10`
+      );
+      const newCartoes = response.data.content;
+      setCartoesBiblioteca((prev) =>
+        pageNum === 0 ? newCartoes : [...prev, ...newCartoes]
+      );
+      setPage(pageNum);
+    } catch (error) {
+      console.error("Erro ao carregar cartões da biblioteca:");
+      Alert.alert(
+        "Erro",
+        "Não foi possível carregar os cartões da biblioteca."
+      );
+    }
+  };
+
+  const handleLoadMore = () => {
+    pegarCartoesBiblioteca(page + 1);
+  };
+
+  useEffect(() => {
+    pegarCartoesBiblioteca();
+  }, []);
 
   const meusCartoes = [
     { id: "1", title: "Cartão 1" },
     { id: "2", title: "Cartão 2" },
-  ];
-
-  const cartoesBiblioteca = [
-    { id: "3", title: "Cartão Biblioteca 1" },
-    { id: "4", title: "Cartão Biblioteca 2" },
   ];
 
   const handleSelectCard = (id: string) => {
@@ -51,7 +79,6 @@ const Cartoes = () => {
   };
 
   const handleAdicionarPrancha = (rotulo: string, prancha: string) => {
-    // Lógica para adicionar o cartão à prancha selecionada
     console.log(`Cartão "${rotulo}" adicionado à prancha "${prancha}".`);
     setModalPranchaVisible(false);
   };
@@ -85,12 +112,9 @@ const Cartoes = () => {
       {/* Barra de Filtros */}
       <View style={styles.filterBar}>
         <TextInput placeholder="Filtrar por rótulo" style={styles.searchBar} />
-        <View style={styles.dropdownContainer}>
-          <Text style={styles.dropdownText}>Categoria:</Text>
-          <TouchableOpacity style={styles.dropdown}>
-            <Text style={styles.dropdownPlaceholder}>Selecione</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.dropdown}>
+          <Text style={{ color: "#888" }}>Selecione</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Meus Cartões */}
@@ -107,43 +131,40 @@ const Cartoes = () => {
             onPress={() => handleSelectCard(item.id)}
           >
             <Text style={styles.cardTitle}>{item.title}</Text>
-            {selectedCard === item.id && (
-              <View style={styles.cardMenu}>
-                <TouchableOpacity
-                  style={styles.cardMenuButton}
-                  onPress={() => setModalPranchaVisible(true)}
-                >
-                  <Text style={styles.cardMenuText}>Adicionar à Prancha</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.cardMenuButton}
-                  onPress={() => setModalAlterarVisible(true)}
-                >
-                  <Text style={styles.cardMenuText}>Alterar Cartão</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.cardMenuButton}
-                  onPress={() => handleExcluirCard(item.title)}
-                >
-                  <Text style={styles.cardMenuText}>Excluir Cartão</Text>
-                </TouchableOpacity>
-              </View>
-            )}
           </TouchableOpacity>
         )}
       />
 
       {/* Cartões da Biblioteca */}
       <Text style={styles.sectionTitle}>Cartões da Biblioteca</Text>
-      <FlatList
-        data={cartoesBiblioteca}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-          </View>
-        )}
-      />
+      <ScrollView onMomentumScrollEnd={handleLoadMore} style={{ flex: 1 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
+          {cartoesBiblioteca.map((card, key) => (
+            <View
+              key={key}
+              style={{
+                width: "20%",
+                marginBottom: 10,
+                transform: [{ scale: 0.9 }],
+              }}
+            >
+              <Cartao
+                type="onClick"
+                cartao={card}
+                setTexto={function (string: string): void {
+                  throw new Error("Function not implemented.");
+                }}
+              />
+            </View>
+          ))}
+        </View>
+      </ScrollView>
 
       {/* Botão Criar Cartão */}
       <TouchableOpacity
@@ -187,8 +208,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f4f4f4",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    padding: 20,
   },
   header: {
     flexDirection: "row",
@@ -210,7 +230,6 @@ const styles = StyleSheet.create({
   },
   filterBar: {
     flexDirection: "row",
-    justifyContent: "space-between",
     marginVertical: 10,
   },
   searchBar: {
@@ -221,27 +240,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginRight: 10,
   },
-  dropdownContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  dropdownText: {
-    marginRight: 5,
-  },
   dropdown: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
     padding: 10,
   },
-  dropdownPlaceholder: {
-    color: "#888",
-  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    marginVertical: 10,
     textAlign: "center",
+    marginVertical: 10,
   },
   card: {
     backgroundColor: "white",
@@ -257,31 +266,6 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 14,
-  },
-  cardMenu: {
-    marginTop: 5,
-  },
-  cardMenuButton: {
-    padding: 5,
-    backgroundColor: "#eee",
-    borderRadius: 3,
-    marginTop: 5,
-  },
-  cardMenuText: {
-    fontSize: 12,
-    color: "#333",
-  },
-  createButton: {
-    position: "absolute",
-    bottom: 10,
-    right: 10,
-    backgroundColor: "#22AD4C",
-    padding: 15,
-    borderRadius: 30,
-  },
-  createButtonText: {
-    color: "white",
-    fontWeight: "bold",
   },
 });
 
