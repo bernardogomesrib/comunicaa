@@ -71,7 +71,7 @@ function RootLayoutNav() {
         />
         <Stack.Screen name="teste"  options={{ headerShown: false }} />
         <Stack.Screen name="login"  options={{ headerShown: false}} />
-        <Stack.Screen name="index"  options={{ headerShown: true}} />
+        <Stack.Screen name="index"  options={{ headerShown: false}} />
         <Stack.Screen name="ttsPage"  options={{ headerShown: false}} />
         <Stack.Screen name="cadastrarUsuario"  options={{ headerShown: false}} />
         <Stack.Screen name="esqueceuSenha"  options={{ headerShown: false}} />
@@ -79,6 +79,7 @@ function RootLayoutNav() {
         <Stack.Screen name="configuracoes"  options={{ headerShown: false}} />
         <Stack.Screen name="modalMenu"  options={{ headerShown: false}} />
         <Stack.Screen name="supervisor"  options={{ headerShown: false}} />
+        <Stack.Screen name="cartoes"  options={{ headerShown: false}} />
       </Stack>
     </ThemeProvider>
   );
