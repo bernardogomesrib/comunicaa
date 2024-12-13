@@ -9,16 +9,25 @@ import {
   StyleSheet,
 } from "react-native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import axios from "axios";
 import * as ScreenOrientation from "expo-screen-orientation";
-import CriarCartaoModal from "./criarCartaoModal";
 import AlterarCartaoModal from "./alterarCartaoModal";
 import ExcluirCartaoModal from "./excluirCartaoModal";
 import AdicionarCartaoPranchaModal from "./adicionarCartaoPranchaModal";
+import ModalOpcoesCartao from "./modalOpcoesCartao";
 import { ScrollView } from "@/components/ui/ScroolView";
 import { Cartao } from "@/components/ui/Cartao";
+import { pegarCartoes } from "./apiService.js";
 
 const Cartoes = () => {
+  const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  const [modalAlterarVisible, setModalAlterarVisible] = useState(false);
+  const [modalExcluirVisible, setModalExcluirVisible] = useState(false);
+  const [modalPranchaVisible, setModalPranchaVisible] = useState(false);
+  const [modalOpcoesVisible, setModalOpcoesVisible] = useState(false);
+  const [cartoesBiblioteca, setCartoesBiblioteca] = useState([]);
+  const [page, setPage] = useState(0);
+  const [cartaoAtual, setCartaoAtual] = useState(null);
+
   useEffect(() => {
     const lockOrientation = async () => {
       await ScreenOrientation.lockAsync(
@@ -26,29 +35,17 @@ const Cartoes = () => {
       );
     };
     lockOrientation();
+    carregarCartoesBiblioteca();
   }, []);
 
-  const [selectedCard, setSelectedCard] = useState<string | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalAlterarVisible, setModalAlterarVisible] = useState(false);
-  const [modalExcluirVisible, setModalExcluirVisible] = useState(false);
-  const [nomeCartaoExcluir, setNomeCartaoExcluir] = useState("");
-  const [modalPranchaVisible, setModalPranchaVisible] = useState(false);
-  const [cartoesBiblioteca, setCartoesBiblioteca] = useState([]);
-  const [page, setPage] = useState(0);
-
-  const pegarCartoesBiblioteca = async (pageNum = 0) => {
+  const carregarCartoesBiblioteca = async (pageNum = 0) => {
     try {
-      const response = await axios.get(
-        `${process.env.EXPO_PUBLIC_API_URL}cartao?page=${pageNum}&size=10`
-      );
-      const newCartoes = response.data.content;
+      const newCartoes = await pegarCartoes(pageNum);
       setCartoesBiblioteca((prev) =>
         pageNum === 0 ? newCartoes : [...prev, ...newCartoes]
       );
       setPage(pageNum);
     } catch (error) {
-      console.error("Erro ao carregar cartões da biblioteca:");
       Alert.alert(
         "Erro",
         "Não foi possível carregar os cartões da biblioteca."
@@ -56,36 +53,14 @@ const Cartoes = () => {
     }
   };
 
-  const handleLoadMore = () => {
-    pegarCartoesBiblioteca(page + 1);
+  const abrirModalOpcoes = (cartao) => {
+    setCartaoAtual(cartao);
+    setModalOpcoesVisible(true);
   };
 
-  useEffect(() => {
-    pegarCartoesBiblioteca();
-  }, []);
-
-  const meusCartoes = [
-    { id: "1", title: "Cartão 1" },
-    { id: "2", title: "Cartão 2" },
-  ];
-
-  const handleSelectCard = (id: string) => {
-    setSelectedCard((prev) => (prev === id ? null : id));
-  };
-
-  const handleExcluirCard = (nome: string) => {
-    setNomeCartaoExcluir(nome);
-    setModalExcluirVisible(true);
-  };
-
-  const handleAdicionarPrancha = (rotulo: string, prancha: string) => {
-    console.log(`Cartão "${rotulo}" adicionado à prancha "${prancha}".`);
-    setModalPranchaVisible(false);
-  };
-
-  const excluirCartao = () => {
-    console.log(`Cartão "${nomeCartaoExcluir}" excluído.`);
-    setModalExcluirVisible(false);
+  const fecharModalOpcoes = () => {
+    setCartaoAtual(null);
+    setModalOpcoesVisible(false);
   };
 
   return (
@@ -93,19 +68,9 @@ const Cartoes = () => {
       {/* Cabeçalho */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Cartões</Text>
-        <View style={styles.headerIcons}>
-          <FontAwesome
-            name="bars"
-            size={24}
-            color="white"
-            style={styles.icon}
-          />
-          <Ionicons
-            name="settings"
-            size={24}
-            color="white"
-            style={styles.icon}
-          />
+        <View>
+          <FontAwesome name="bars" size={24} color="white" />
+          <Ionicons name="settings" size={24} color="white" />
         </View>
       </View>
 
@@ -120,7 +85,7 @@ const Cartoes = () => {
       {/* Meus Cartões */}
       <Text style={styles.sectionTitle}>Meus Cartões</Text>
       <FlatList
-        data={meusCartoes}
+        data={[{ id: "1", title: "Cartão 1" }]}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -128,77 +93,67 @@ const Cartoes = () => {
               styles.card,
               selectedCard === item.id && styles.selectedCard,
             ]}
-            onPress={() => handleSelectCard(item.id)}
+            onPress={() => abrirModalOpcoes(item)}
           >
-            <Text style={styles.cardTitle}>{item.title}</Text>
+            <Text>{item.title}</Text>
           </TouchableOpacity>
         )}
       />
 
       {/* Cartões da Biblioteca */}
       <Text style={styles.sectionTitle}>Cartões da Biblioteca</Text>
-      <ScrollView onMomentumScrollEnd={handleLoadMore} style={{ flex: 1 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
-        >
-          {cartoesBiblioteca.map((card, key) => (
-            <View
-              key={key}
-              style={{
-                width: "20%", // Ajusta a largura relativa ao contêiner pai
-                marginBottom: 10,
-                transform: [{ scale: 0.9 }], // Escala para reduzir o tamanho geral
-              }}
+      <ScrollView
+        onMomentumScrollEnd={() => carregarCartoesBiblioteca(page + 1)}
+        style={{ flex: 1 }}
+      >
+        <View style={styles.cardContainer}>
+          {cartoesBiblioteca.map((card) => (
+            <TouchableOpacity
+              key={card.id}
+              style={[
+                styles.card,
+                selectedCard === card.id && styles.selectedCard,
+              ]}
+              onPress={() => abrirModalOpcoes(card)}
             >
-              <Cartao
-                type="onClick"
-                cartao={card}
-                setTexto={function (string: string): void {
-                  throw new Error("Function not implemented.");
-                }}
-              />
-            </View>
+              <Cartao type="onClick" cartao={card} setTexto={() => {}} />
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
 
-      {/* Botão Criar Cartão */}
-      <TouchableOpacity
-        style={{
-          position: "absolute",
-          bottom: 10,
-          right: 10,
-          backgroundColor: "#4d88ff",
-          padding: 15,
-          borderRadius: 30,
-        }}
-        onPress={() => setModalVisible(true)}
-      >
-        <Text style={{ color: "white", fontWeight: "bold" }}>Criar Cartão</Text>
-      </TouchableOpacity>
-
       {/* Modais */}
-      <CriarCartaoModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-      />
       <AlterarCartaoModal
         visible={modalAlterarVisible}
         onClose={() => setModalAlterarVisible(false)}
+        cartao={cartaoAtual}
+        onSave={() => carregarCartoesBiblioteca()}
       />
       <ExcluirCartaoModal
         visible={modalExcluirVisible}
         onClose={() => setModalExcluirVisible(false)}
-        onExcluir={excluirCartao}
-        nomeCartao={nomeCartaoExcluir}
+        onExcluir={() => carregarCartoesBiblioteca()}
+        nomeCartao={cartaoAtual?.title}
       />
       <AdicionarCartaoPranchaModal
         visible={modalPranchaVisible}
         onClose={() => setModalPranchaVisible(false)}
+      />
+      <ModalOpcoesCartao
+        visible={modalOpcoesVisible}
+        onClose={fecharModalOpcoes}
+        onAdicionarPrancha={() => {
+          setModalPranchaVisible(true);
+          fecharModalOpcoes();
+        }}
+        onEditar={() => {
+          setModalAlterarVisible(true);
+          fecharModalOpcoes();
+        }}
+        onExcluir={() => {
+          setModalExcluirVisible(true);
+          fecharModalOpcoes();
+        }}
       />
     </View>
   );
@@ -221,12 +176,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
-  },
-  headerIcons: {
-    flexDirection: "row",
-  },
-  icon: {
-    marginHorizontal: 10,
   },
   filterBar: {
     flexDirection: "row",
@@ -264,8 +213,10 @@ const styles = StyleSheet.create({
     borderColor: "#6D83F4",
     borderWidth: 2,
   },
-  cardTitle: {
-    fontSize: 14,
+  cardContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
 });
 

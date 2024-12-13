@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,20 +7,67 @@ import {
   TouchableOpacity,
   Modal,
   Alert,
+  ScrollView,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  fetchCategorias,
+  atualizarCartao,
+} from "../../app/(rotas)/apiService.js";
+import {
+  CartaoEntity,
+  CategoriaCartaoEntity,
+} from "@/components/entidades/entidades.js";
 
 const AlterarCartaoModal = ({
   visible,
   onClose,
+  cartao,
+  onSave,
 }: {
   visible: boolean;
   onClose: () => void;
+  cartao: CartaoEntity | null;
+  onSave: () => void;
 }) => {
-  const [rotulo, setRotulo] = useState("");
-  const [categoria, setCategoria] = useState("");
-  const [imagem, setImagem] = useState<string | null>(null);
+  const [rotulo, setRotulo] = useState(cartao?.rotulo || "");
+  const [categoriaId, setCategoriaId] = useState<number | null>(
+    cartao?.categoria?.id || null
+  );
+  const [imagem, setImagem] = useState<string | null>(
+    cartao?.imagemCartao || null
+  );
+  const [categorias, setCategorias] = useState<CategoriaCartaoEntity[]>([]);
+  const [loadingCategorias, setLoadingCategorias] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  useEffect(() => {
+    if (cartao) {
+      setRotulo(cartao.rotulo || "");
+      setCategoriaId(cartao.categoria?.id || null);
+      setImagem(cartao.imagemCartao || null);
+    }
+  }, [cartao]);
+
+  useEffect(() => {
+    if (visible) {
+      carregarCategorias();
+      categorias;
+    }
+  }, [visible]);
+
+  const carregarCategorias = async () => {
+    setLoadingCategorias(true);
+    try {
+      const categoriasCarregadas = await fetchCategorias();
+      setCategorias(categoriasCarregadas);
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível carregar as categorias.");
+    } finally {
+      setLoadingCategorias(false);
+    }
+  };
 
   const selecionarDaBiblioteca = async () => {
     const permissionResult =
@@ -63,16 +110,31 @@ const AlterarCartaoModal = ({
     }
   };
 
-  const salvarAlteracoes = () => {
-    if (!rotulo || !categoria) {
+  const salvarAlteracoes = async () => {
+    if (!rotulo || !categoriaId) {
       Alert.alert(
         "Erro",
         "Preencha todos os campos para salvar as alterações."
       );
       return;
     }
-    Alert.alert("Sucesso", "Alterações salvas com sucesso!");
-    onClose();
+
+    const formData = new FormData();
+    formData.append("rotulo", rotulo);
+    formData.append("categoriaid", categoriaId.toString());
+    if (imagem) {
+      const file = { uri: imagem, type: "image/jpeg", name: "cartao.jpg" };
+      formData.append("file", file);
+    }
+
+    try {
+      await atualizarCartao(cartao?.id!, formData);
+      Alert.alert("Sucesso", "Cartão atualizado com sucesso!");
+      onSave();
+    } catch (error) {
+      console.error("Erro ao salvar alterações:", error.response || error);
+      Alert.alert("Erro", "Não foi possível atualizar o cartão.");
+    }
   };
 
   return (
@@ -97,11 +159,37 @@ const AlterarCartaoModal = ({
                 onChangeText={setRotulo}
               />
               <Text style={styles.label}>Categoria</Text>
-              <TouchableOpacity style={styles.dropdown}>
+              <TouchableOpacity
+                style={styles.dropdown}
+                onPress={() => setShowDropdown(!showDropdown)}
+              >
                 <Text style={styles.dropdownText}>
-                  {categoria || "Selecione"}
+                  {categorias.find((cat) => cat.id === categoriaId)
+                    ?.descricao || "Selecione"}
                 </Text>
               </TouchableOpacity>
+              {showDropdown && (
+                <ScrollView
+                  style={styles.dropdownScroll}
+                  nestedScrollEnabled={true}
+                >
+                  {categorias.map((cat) => (
+                    <TouchableOpacity
+                      key={cat.id}
+                      onPress={() => {
+                        setCategoriaId(cat.id);
+                        setShowDropdown(false);
+                      }}
+                      style={[
+                        styles.dropdownItem,
+                        categoriaId === cat.id && styles.selectedDropdownItem,
+                      ]}
+                    >
+                      <Text>{cat.descricao}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
             </View>
 
             {/* Lado Direito */}
@@ -241,6 +329,21 @@ const styles = StyleSheet.create({
   createButtonText: {
     color: "white",
     fontWeight: "bold",
+  },
+  dropdownScroll: {
+    maxHeight: 70,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginTop: 5,
+  },
+  dropdownItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  selectedDropdownItem: {
+    backgroundColor: "#f0f0f0",
   },
 });
 
